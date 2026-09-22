@@ -79,7 +79,9 @@ class ProjectMetadataTest {
                         Path.of("settings.gradle"), Path.of("README.md"), Path.of("LICENSE"), Path.of("docs"))
                 .filter(Files::exists)
                 .flatMap(ProjectMetadataTest::walk)) {
-            files.filter(Files::isRegularFile).filter(file -> !file.toString().endsWith(".png")).forEach(file -> {
+            files.filter(Files::isRegularFile)
+                    .filter(file -> !file.toString().endsWith(".png") && !file.toString().endsWith(".jar"))
+                    .forEach(file -> {
                 String text;
                 try {
                     text = Files.readString(file, StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);
