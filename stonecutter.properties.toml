@@ -1,0 +1,13 @@
+# Shared across every version. Per-version overrides live in the [version] tables below.
+mod.id = "limn"
+mod.name = "Limn"
+mod.group = "dev.limn"
+mod.version = "1.0.0"
+
+deps.fabric_loader = "0.19.3"
+loomx.loom_version = "1.17.21"
+
+["26.2"]
+mod.mc_compat = "~26.2"
+deps.fabric_api = "0.155.2+26.2"
+deps.modmenu = "20.0.1"

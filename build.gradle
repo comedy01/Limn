@@ -1,28 +1,33 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	// Picks fabric-loom (unobfuscated versions) or fabric-loom-remap (obfuscated versions)
+	// based on the active Stonecutter node, so this one script works across the whole range.
+	id 'dev.kikugie.loom-back-compat'
 }
 
-version = "${project.mod_version}+mc${project.minecraft_version}"
-group = project.maven_group
+// DO NOT set group here - it's set once in stonecutter.gradle and inherited by every node.
+version = "${property('mod.version')}+${sc.current.version}"
+base.archivesName = property('mod.id')
 
-base {
-	archivesName = project.archives_base_name
-}
+def requiredJava =
+		sc.current.parsed.matches('>=26.1') ? JavaVersion.VERSION_25 :
+		sc.current.parsed.matches('>=1.20.5') ? JavaVersion.VERSION_21 :
+		JavaVersion.VERSION_17
 
 repositories {
 	maven {
-		name = "Terraformers"
-		url = "https://maven.terraformersmc.com/"
+		name = 'Terraformers'
+		url = 'https://maven.terraformersmc.com/'
 	}
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft "com.mojang:minecraft:${sc.current.version}"
+	loomx.applyMojangMappings()
 
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	modImplementation "net.fabricmc:fabric-loader:${property('deps.fabric_loader')}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${property('deps.fabric_api')}"
 
-	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modCompileOnly "com.terraformersmc:modmenu:${property('deps.modmenu')}"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -33,34 +38,39 @@ test {
 }
 
 processResources {
-	def version = project.version
-	inputs.property "version", version
+	def modVersion = project.version
+	def mcCompat = project.property('mod.mc_compat')
+	inputs.property "version", modVersion
+	inputs.property "minecraft", mcCompat
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand "version": modVersion, "minecraft": mcCompat
+	}
+	filesMatching("*.mixins.json") {
+		expand "java": "JAVA_${requiredJava.majorVersion}"
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	it.options.release = requiredJava.majorVersion as int
 	it.options.encoding = 'UTF-8'
 }
 
 java {
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = requiredJava
+	targetCompatibility = requiredJava
 
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(25)
+		languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
 	}
 }
 
 jar {
 	inputs.property "archivesName", project.base.archivesName
 
-	from("LICENSE") {
+	from(rootProject.file("LICENSE")) {
 		rename { "${it}_${project.base.archivesName.get()}" }
 	}
 }
