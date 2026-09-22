@@ -15,11 +15,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * 1.21 and 1.21.1: there is no separate renderBlockOutline method yet - renderHitOutline is
- * called directly from renderLevel, and it has no color parameter at all (that only appears once
- * the call gets extracted into its own method at 1.21.2).
- */
 @Mixin(LevelRenderer.class)
 abstract class BlockOutlineMixin {
     @WrapOperation(

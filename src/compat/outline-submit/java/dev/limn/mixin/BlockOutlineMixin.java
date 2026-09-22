@@ -12,10 +12,6 @@ import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * 26.1+: outlines are described here through the deferred submit-node rendering model and
- * drawn later, so there is no camera-relative offset to apply ourselves.
- */
 @Mixin(LevelRenderer.class)
 abstract class BlockOutlineMixin {
     @WrapOperation(

@@ -11,12 +11,6 @@ import net.minecraft.client.renderer.state.BlockOutlineRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * Before 1.21.11, renderHitOutline has no width parameter at all - vanilla draws the outline at
- * a fixed GL line width, so this pack pairs with the width-fixed LimnRuntime, which never calls
- * VertexConsumer.setLineWidth. The camera-relative offset still has to be pushed onto the pose
- * stack by hand, same as the 1.21.11 pack.
- */
 @Mixin(LevelRenderer.class)
 abstract class BlockOutlineMixin {
     @WrapOperation(

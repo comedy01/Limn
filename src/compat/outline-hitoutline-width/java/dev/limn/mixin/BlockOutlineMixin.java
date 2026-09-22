@@ -11,11 +11,6 @@ import net.minecraft.client.renderer.state.BlockOutlineRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * 1.21.11: outlines still draw immediately (no deferred submit-node model yet), and
- * renderHitOutline takes the camera position separately from the pose stack, so the block's
- * camera-relative offset has to be pushed onto the stack by hand before drawing.
- */
 @Mixin(LevelRenderer.class)
 abstract class BlockOutlineMixin {
     @WrapOperation(

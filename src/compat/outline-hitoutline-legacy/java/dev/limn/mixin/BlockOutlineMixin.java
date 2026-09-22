@@ -15,11 +15,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * Before the render-state rework (1.21.9), there is no BlockOutlineRenderState: renderHitOutline
- * receives the raw block position and state directly, and the outline shape has to be computed
- * the same way vanilla does, from the block state itself.
- */
 @Mixin(LevelRenderer.class)
 abstract class BlockOutlineMixin {
     @WrapOperation(

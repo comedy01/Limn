@@ -11,12 +11,6 @@ import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * 26.1-26.1.2: still draws immediately, same shape as the 1.21.11 pack (renderHitOutline takes
- * the camera position and a per-vertex width), but BlockOutlineRenderState moved one package
- * level deeper (renderer.state.level instead of renderer.state). The deferred submit-node model
- * only starts at 26.2.
- */
 @Mixin(LevelRenderer.class)
 abstract class BlockOutlineMixin {
     @WrapOperation(

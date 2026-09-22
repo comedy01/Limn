@@ -7,10 +7,6 @@ import dev.limn.outline.OutlinePolicy;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3f;
 
-/**
- * Before 1.21.11, VertexConsumer has no per-vertex line width, so the Line Width setting has no
- * effect here - outlines draw at whatever width vanilla uses. Color and rainbow are unaffected.
- */
 public final class LimnRuntime {
     public static final boolean SUPPORTS_LINE_WIDTH = false;
 
