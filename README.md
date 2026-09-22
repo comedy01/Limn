@@ -4,6 +4,8 @@ Recolor the box drawn around the block you are looking at. Pick any color with t
 
 Limn is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
 
+Supported versions: 1.21 to 26.2.
+
 ## Features
 
 - **Solid Color** - pick any color and opacity for the outline.
@@ -14,8 +16,8 @@ Limn is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
 
 ## Install
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 26.2.
-2. Put the Limn jar in your `mods` folder.
+1. Install [Fabric Loader](https://fabricmc.net/use/) for your version of Minecraft.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Limn jar for your version in your `mods` folder.
 3. Start the game.
 
 Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings screen (*Mods > Limn > Configure*).
