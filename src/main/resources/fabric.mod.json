@@ -4,6 +4,7 @@
 	"version": "${version}",
 	"name": "Limn",
 	"description": "Recolor the box drawn around the block you are looking at: any solid color, or a rainbow that flows along the edges. Client-side only.",
+	"icon": "assets/limn/icon.png",
 	"authors": [
 		"comedy01"
 	],
