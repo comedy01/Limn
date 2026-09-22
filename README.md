@@ -4,7 +4,7 @@ Recolor the box drawn around the block you are looking at. Pick any color with t
 
 Limn is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
 
-Supported versions: 1.21 to 26.2.
+Supported versions: 1.21 to 26.3.
 
 ## Features
 

@@ -13,8 +13,8 @@ import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -127,7 +127,7 @@ public class LimnClientGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(center[0], center[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
     }
 
     private static void dragSliderToMax(ClientGameTestContext context, String captionText) {
@@ -146,7 +146,7 @@ public class LimnClientGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(bounds[0], bounds[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
     }
 
     private static AbstractSliderButton findSlider(GuiEventListener node, String captionText) {
