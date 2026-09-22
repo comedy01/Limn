@@ -84,7 +84,10 @@ public class LimnClientGameTest implements FabricClientGameTest {
         context.getInput().scroll(-20.0);
         context.waitTicks(2);
         double[] center = context.computeOnClient(client -> {
+            //? if >=26.2 {
             Button button = findButton(client.gui.screen(), translationKey);
+            //?} else
+            /*Button button = findButton(client.screen, translationKey);*/
             if (button == null) {
                 throw new AssertionError("no button '" + translationKey + "' on the current screen");
             }
