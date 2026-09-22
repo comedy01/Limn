@@ -1,6 +1,7 @@
 package dev.limn.gametest;
 
 import dev.limn.client.LimnClient;
+import dev.limn.client.LimnRuntime;
 import dev.limn.client.gui.LimnSettingsScreen;
 import dev.limn.config.OutlineConfig;
 import dev.limn.outline.OutlinePolicy;
@@ -77,11 +78,20 @@ public class LimnClientGameTest implements FabricClientGameTest {
         context.waitTicks(5);
         check(!OutlinePolicy.isRainbow(config.mode()), "clicking the mode button again did not switch back");
 
+        double speedBefore = config.rainbowSpeed();
+        dragSliderToMax(context, "Rainbow Speed");
+        context.waitTicks(5);
+        check(config.rainbowSpeed() != speedBefore, "dragging the rainbow speed slider did not change the config");
+        log("screenshot: " + context.takeScreenshot("limn-settings-slider-dragged"));
+
         double widthBefore = config.width();
         dragSliderToMax(context, "Line Width");
         context.waitTicks(5);
-        check(config.width() != widthBefore, "dragging the width slider did not change the config");
-        log("screenshot: " + context.takeScreenshot("limn-settings-slider-dragged"));
+        if (LimnRuntime.SUPPORTS_LINE_WIDTH) {
+            check(config.width() != widthBefore, "dragging the width slider did not change the config");
+        } else {
+            check(config.width() == widthBefore, "the disabled width slider still responded to a drag");
+        }
 
         clickButton(context, "limn.options.reset");
         context.waitTicks(5);

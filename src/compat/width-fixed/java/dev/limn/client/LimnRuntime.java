@@ -12,6 +12,8 @@ import org.joml.Vector3f;
  * effect here - outlines draw at whatever width vanilla uses. Color and rainbow are unaffected.
  */
 public final class LimnRuntime {
+    public static final boolean SUPPORTS_LINE_WIDTH = false;
+
     private LimnRuntime() {
     }
 

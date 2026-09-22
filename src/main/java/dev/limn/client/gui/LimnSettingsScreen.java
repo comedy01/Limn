@@ -1,6 +1,7 @@
 package dev.limn.client.gui;
 
 import dev.limn.client.LimnClient;
+import dev.limn.client.LimnRuntime;
 import dev.limn.config.OutlineConfig;
 import dev.limn.outline.OutlinePolicy;
 import net.minecraft.client.Options;
@@ -53,6 +54,10 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 config.width(),
                 value -> String.format(Locale.ROOT, "%.2fx", value),
                 config::setWidth);
+        if (!LimnRuntime.SUPPORTS_LINE_WIDTH) {
+            widthSlider.active = false;
+            widthSlider.setTooltip(Tooltip.create(Component.translatable("limn.options.width.unsupported")));
+        }
         AbstractWidget speedSlider = new StepSlider(
                 "limn.options.rainbow_speed",
                 "limn.options.rainbow_speed.tooltip",

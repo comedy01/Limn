@@ -8,6 +8,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3f;
 
 public final class LimnRuntime {
+    public static final boolean SUPPORTS_LINE_WIDTH = true;
+
     private LimnRuntime() {
     }
 

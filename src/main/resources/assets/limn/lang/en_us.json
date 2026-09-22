@@ -13,6 +13,7 @@
   "limn.options.color.tooltip": "Outline color. Rainbow mode ignores this but keeps the opacity.",
   "limn.options.width": "Line Width",
   "limn.options.width.tooltip": "Thickness compared with Minecraft's own outline. 1.0 is vanilla.",
+  "limn.options.width.unsupported": "Not available before Minecraft 1.21.11 - the game doesn't support variable outline thickness on older versions.",
   "limn.options.rainbow_speed": "Rainbow Speed",
   "limn.options.rainbow_speed.tooltip": "How fast the rainbow moves. 1.0 is one full color cycle every four seconds.",
   "limn.options.rainbow_spread": "Rainbow Spread",
