@@ -1,18 +1,18 @@
 package dev.limn.client.gui;
 
-import com.mojang.serialization.Codec;
 import dev.limn.client.LimnClient;
 import dev.limn.config.OutlineConfig;
 import dev.limn.outline.OutlinePolicy;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 
+import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 
@@ -33,7 +33,7 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 config.enabled(),
                 config::setEnabled));
 
-        list.addBig(Button.builder(
+        AbstractWidget modeButton = Button.builder(
                         modeLabel(config.mode()),
                         button -> {
                             config.setMode(OutlinePolicy.isRainbow(config.mode())
@@ -42,7 +42,11 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                             rebuildWidgets();
                         })
                 .width(WIDE_BUTTON)
-                .build());
+                .build();
+        //? if >=26.2 {
+        list.addBig(modeButton);
+        //?} else
+        /*list.addSmall(List.of(modeButton));*/
 
         list.addBig(intSlider(
                 "limn.options.alpha",
@@ -95,14 +99,18 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 value -> String.format(Locale.ROOT, "%.2f", value),
                 config::setRainbowSpread));
 
-        list.addBig(Button.builder(
+        AbstractWidget resetButton = Button.builder(
                         Component.translatable("limn.options.reset"),
                         button -> {
                             config.resetToDefaults();
                             rebuildWidgets();
                         })
                 .width(WIDE_BUTTON)
-                .build());
+                .build();
+        //? if >=26.2 {
+        list.addBig(resetButton);
+        //?} else
+        /*list.addSmall(List.of(resetButton));*/
     }
 
     @Override
@@ -129,16 +137,20 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
             double step,
             double initial,
             DoubleFunction<String> format,
+            //? if >=26.2 {
             OptionInstance.ValueUpdateListener<Double> onChange) {
+            //?} else
+            /*java.util.function.Consumer<Double> onChange) {*/
 
-        SteppedRange range = new SteppedRange(min, max, step);
         return new OptionInstance<>(
                 captionKey,
                 OptionInstance.cachedConstantTooltip(Component.translatable(tooltipKey)),
                 (caption, value) -> Component.translatable(
                         "options.generic_value", caption, Component.literal(format.apply(value))),
-                range,
-                range.snap(initial),
+                OptionInstance.UnitDouble.INSTANCE.xmap(
+                        frac -> snap(min, max, step, min + frac * (max - min)),
+                        value -> (snap(min, max, step, value) - min) / (max - min)),
+                snap(min, max, step, initial),
                 onChange);
     }
 
@@ -146,7 +158,10 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
             String captionKey,
             String tooltipKey,
             int initial,
+            //? if >=26.2 {
             OptionInstance.ValueUpdateListener<Integer> onChange) {
+            //?} else
+            /*java.util.function.Consumer<Integer> onChange) {*/
 
         IntFunction<String> format = value -> Integer.toString(value);
         return new OptionInstance<>(
@@ -154,60 +169,14 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 OptionInstance.cachedConstantTooltip(Component.translatable(tooltipKey)),
                 (caption, value) -> Component.translatable(
                         "options.generic_value", caption, Component.literal(format.apply(value))),
-                new ByteRange(),
+                new OptionInstance.IntRange(0, 255),
                 Math.max(0, Math.min(255, initial)),
                 onChange);
     }
 
-    private record SteppedRange(double min, double max, double step)
-            implements OptionInstance.SliderableValueSet<Double> {
-
-        double snap(double value) {
-            double clamped = Math.max(min, Math.min(max, value));
-            double snapped = min + Math.round((clamped - min) / step) * step;
-            return Math.max(min, Math.min(max, snapped));
-        }
-
-        @Override
-        public double toSliderValue(Double value) {
-            return (snap(value) - min) / (max - min);
-        }
-
-        @Override
-        public Double fromSliderValue(double slider) {
-            return snap(min + Math.max(0.0, Math.min(1.0, slider)) * (max - min));
-        }
-
-        @Override
-        public Optional<Double> validateValue(Double value) {
-            return value != null && value >= min && value <= max ? Optional.of(value) : Optional.empty();
-        }
-
-        @Override
-        public Codec<Double> codec() {
-            return Codec.doubleRange(min, max);
-        }
-    }
-
-    private record ByteRange() implements OptionInstance.SliderableValueSet<Integer> {
-        @Override
-        public double toSliderValue(Integer value) {
-            return Math.max(0, Math.min(255, value)) / 255.0;
-        }
-
-        @Override
-        public Integer fromSliderValue(double slider) {
-            return (int) Math.round(Math.max(0.0, Math.min(1.0, slider)) * 255.0);
-        }
-
-        @Override
-        public Optional<Integer> validateValue(Integer value) {
-            return value != null && value >= 0 && value <= 255 ? Optional.of(value) : Optional.empty();
-        }
-
-        @Override
-        public Codec<Integer> codec() {
-            return Codec.intRange(0, 255);
-        }
+    private static double snap(double min, double max, double step, double value) {
+        double clamped = Math.max(min, Math.min(max, value));
+        double snapped = min + Math.round((clamped - min) / step) * step;
+        return Math.max(min, Math.min(max, snapped));
     }
 }
