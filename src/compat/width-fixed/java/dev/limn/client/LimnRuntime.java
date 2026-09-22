@@ -73,6 +73,6 @@ public final class LimnRuntime {
             int argb) {
         builder.addVertex(pose, (float) x, (float) y, (float) z)
                 .setColor(argb)
-                .setNormal(pose, normal);
+                .setNormal(pose, normal.x(), normal.y(), normal.z());
     }
 }
