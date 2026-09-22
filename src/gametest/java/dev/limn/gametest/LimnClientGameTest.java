@@ -43,6 +43,12 @@ public class LimnClientGameTest implements FabricClientGameTest {
         context.waitTicks(5);
         log("screenshot: " + context.takeScreenshot("limn-solid"));
 
+        config.setWidth(OutlinePolicy.MAX_WIDTH);
+        context.waitTicks(5);
+        log("screenshot: " + context.takeScreenshot("limn-thick"));
+        config.setWidth(OutlinePolicy.DEFAULT_WIDTH);
+        context.waitTicks(5);
+
         config.setMode(OutlinePolicy.MODE_RAINBOW);
         context.waitTicks(10);
         log("screenshot: " + context.takeScreenshot("limn-rainbow"));
