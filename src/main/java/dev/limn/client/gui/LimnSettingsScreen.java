@@ -102,7 +102,7 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                     config.setMode(OutlinePolicy.isRainbow(config.mode())
                             ? OutlinePolicy.MODE_SOLID
                             : OutlinePolicy.MODE_RAINBOW);
-                    rebuildWidgets();
+                    button.setMessage(modeLabel(config.mode()));
                 })
                 .width(WIDTH)
                 .build();
