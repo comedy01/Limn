@@ -1,0 +1,45 @@
+# gradle
+.gradle/
+build/
+out/
+classes/
+
+# idea / eclipse / vscode
+.idea/
+*.iml
+*.ipr
+*.iws
+*.launch
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# os
+.DS_Store
+Thumbs.db
+
+# fabric dev client / server runtime state
+run/
+
+# java
+*.class
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+# logs and local scratch
+logs/
+*.log
+
+# local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# local notes and release prep, not part of the repo
+docs/

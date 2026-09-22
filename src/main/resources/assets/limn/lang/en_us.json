@@ -1,0 +1,21 @@
+{
+  "limn.options.title": "Limn",
+  "limn.options.enabled": "Enabled",
+  "limn.options.enabled.tooltip": "Recolor the box drawn around the block you are looking at.",
+  "limn.options.mode": "Outline Style: %s",
+  "limn.options.mode.solid": "Solid Color",
+  "limn.options.mode.rainbow": "Rainbow",
+  "limn.options.alpha": "Opacity",
+  "limn.options.alpha.tooltip": "Transparency of the outline. 255 is fully opaque.",
+  "limn.options.red": "Red",
+  "limn.options.green": "Green",
+  "limn.options.blue": "Blue",
+  "limn.options.color.tooltip": "Outline color. Rainbow mode ignores this but keeps the opacity.",
+  "limn.options.width": "Line Width",
+  "limn.options.width.tooltip": "Thickness compared with Minecraft's own outline. 1.0 is vanilla.",
+  "limn.options.rainbow_speed": "Rainbow Speed",
+  "limn.options.rainbow_speed.tooltip": "How fast the rainbow moves. 1.0 is one full color cycle every four seconds.",
+  "limn.options.rainbow_spread": "Rainbow Spread",
+  "limn.options.rainbow_spread.tooltip": "How much the color changes across one block. 0 makes the whole outline change color together.",
+  "limn.options.reset": "Reset to Defaults"
+}

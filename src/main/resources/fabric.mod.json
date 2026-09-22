@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "limn",
+	"version": "${version}",
+	"name": "Limn",
+	"description": "Recolor the box drawn around the block you are looking at: any solid color, or a rainbow that flows along the edges. Client-side only.",
+	"authors": [
+		"comedy01"
+	],
+	"license": "MIT",
+	"contact": {
+		"homepage": "https://github.com/comedy01/Limn",
+		"sources": "https://github.com/comedy01/Limn",
+		"issues": "https://github.com/comedy01/Limn/issues"
+	},
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.limn.client.LimnClient"
+		],
+		"modmenu": [
+			"dev.limn.compat.LimnModMenu"
+		]
+	},
+	"mixins": [
+		"limn.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25"
+	},
+	"suggests": {
+		"modmenu": "*"
+	}
+}

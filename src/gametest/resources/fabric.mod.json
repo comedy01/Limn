@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "limn-test",
+	"version": "1.0.0",
+	"name": "Limn in-game tests",
+	"description": "Development-only client game tests for Limn. Not shipped.",
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"dev.limn.gametest.LimnClientGameTest"
+		]
+	},
+	"depends": {
+		"limn": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}
