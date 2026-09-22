@@ -1,33 +1,62 @@
 plugins {
-	// Picks fabric-loom (unobfuscated versions) or fabric-loom-remap (obfuscated versions)
-	// based on the active Stonecutter node, so this one script works across the whole range.
-	id 'dev.kikugie.loom-back-compat'
+	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
 }
 
-// DO NOT set group here - it's set once in stonecutter.gradle and inherited by every node.
-version = "${property('mod.version')}+${sc.current.version}"
-base.archivesName = property('mod.id')
+def minecraftVersion = project.minecraft_version
+def remap = minecraftVersion.startsWith("1.")
 
-def requiredJava =
-		sc.current.parsed.matches('>=26.1') ? JavaVersion.VERSION_25 :
-		sc.current.parsed.matches('>=1.20.5') ? JavaVersion.VERSION_21 :
-		JavaVersion.VERSION_17
+def versionProps = new Properties()
+file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
+
+def packs = versionProps.getProperty("packs").split(",")
+def label = versionProps.getProperty("label")
+def javaVersion = versionProps.getProperty("java").toInteger()
+def gametest = versionProps.getProperty("gametest", "true") == "true"
+
+def expansions = [java_version: javaVersion]
+versionProps.stringPropertyNames().each { expansions[it] = versionProps.getProperty(it) }
+
+apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
+
+version = "${project.mod_version}+mc${label}"
+expansions.version = project.version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+packs.each { pack ->
+	sourceSets.main.java.srcDir "src/compat/${pack}/java"
+}
+sourceSets.configureEach {
+	if (gametest && it.name == "gametest") {
+		packs.each { pack ->
+			it.java.srcDir "src/compat/${pack}/gametest/java"
+		}
+	}
+}
 
 repositories {
 	maven {
-		name = 'Terraformers'
-		url = 'https://maven.terraformersmc.com/'
+		name = "Terraformers"
+		url = "https://maven.terraformersmc.com/"
 	}
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${sc.current.version}"
-	loomx.applyMojangMappings()
-
-	modImplementation "net.fabricmc:fabric-loader:${property('deps.fabric_loader')}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${property('deps.fabric_api')}"
-
-	modCompileOnly "com.terraformersmc:modmenu:${property('deps.modmenu')}"
+	minecraft "com.mojang:minecraft:${minecraftVersion}"
+	if (remap) {
+		mappings loom.officialMojangMappings()
+		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+		modImplementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
+		modCompileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
+	} else {
+		implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+		implementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
+		compileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
+	}
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -38,48 +67,44 @@ test {
 }
 
 processResources {
-	def modVersion = project.version
-	def mcCompat = project.property('mod.mc_compat')
-	inputs.property "version", modVersion
-	inputs.property "minecraft", mcCompat
+	inputs.properties(expansions)
 
-	filesMatching("fabric.mod.json") {
-		expand "version": modVersion, "minecraft": mcCompat
-	}
-	filesMatching("*.mixins.json") {
-		expand "java": "JAVA_${requiredJava.majorVersion}"
+	filesMatching(["fabric.mod.json", "limn.mixins.json"]) {
+		expand expansions
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = requiredJava.majorVersion as int
+	it.options.release = javaVersion
 	it.options.encoding = 'UTF-8'
 }
 
 java {
 	withSourcesJar()
 
-	sourceCompatibility = requiredJava
-	targetCompatibility = requiredJava
+	sourceCompatibility = JavaVersion.toVersion(javaVersion)
+	targetCompatibility = JavaVersion.toVersion(javaVersion)
 
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
+		languageVersion = JavaLanguageVersion.of(javaVersion)
 	}
 }
 
 jar {
 	inputs.property "archivesName", project.base.archivesName
 
-	from(rootProject.file("LICENSE")) {
+	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}" }
 	}
 }
 
-fabricApi {
-	configureTests {
-		createSourceSet = true
-		modId = "limn-test"
-		enableGameTests = false
-		enableClientGameTests = true
+if (gametest) {
+	fabricApi {
+		configureTests {
+			createSourceSet = true
+			modId = "limn-test"
+			enableGameTests = false
+			enableClientGameTests = true
+		}
 	}
 }

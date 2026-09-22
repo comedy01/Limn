@@ -27,8 +27,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",
-		"minecraft": "${minecraft}",
-		"java": ">=25"
+		"minecraft": "${range}",
+		"java": ">=${java_version}"
 	},
 	"suggests": {
 		"modmenu": "*"

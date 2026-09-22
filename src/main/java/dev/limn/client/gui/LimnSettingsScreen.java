@@ -3,21 +3,24 @@ package dev.limn.client.gui;
 import dev.limn.client.LimnClient;
 import dev.limn.config.OutlineConfig;
 import dev.limn.outline.OutlinePolicy;
-import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.DoubleConsumer;
 import java.util.function.DoubleFunction;
-import java.util.function.IntFunction;
+import java.util.function.IntConsumer;
 
 public final class LimnSettingsScreen extends OptionsSubScreen {
-    private static final int WIDE_BUTTON = 310;
+    private static final int WIDTH = 150;
+    private static final int HEIGHT = 20;
 
     public LimnSettingsScreen(Screen lastScreen, Options options) {
         super(lastScreen, options, Component.translatable("limn.options.title"));
@@ -27,49 +30,21 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
     protected void addOptions() {
         OutlineConfig config = LimnClient.config();
 
-        list.addBig(OptionInstance.createBoolean(
-                "limn.options.enabled",
-                OptionInstance.cachedConstantTooltip(Component.translatable("limn.options.enabled.tooltip")),
-                config.enabled(),
-                config::setEnabled));
+        list.addSmall(List.of(enabledButton(config), modeButton(config)));
 
-        AbstractWidget modeButton = Button.builder(
-                        modeLabel(config.mode()),
-                        button -> {
-                            config.setMode(OutlinePolicy.isRainbow(config.mode())
-                                    ? OutlinePolicy.MODE_SOLID
-                                    : OutlinePolicy.MODE_RAINBOW);
-                            rebuildWidgets();
-                        })
-                .width(WIDE_BUTTON)
-                .build();
-        //? if >=26.2 {
-        list.addBig(modeButton);
-        //?} else
-        /*list.addSmall(List.of(modeButton));*/
+        list.addSmall(List.of(
+                intSlider("limn.options.alpha", "limn.options.color.tooltip",
+                        (config.color() >>> 24) & 0xFF, value -> setChannel(config, 24, value)),
+                intSlider("limn.options.red", "limn.options.color.tooltip",
+                        (config.color() >>> 16) & 0xFF, value -> setChannel(config, 16, value))));
 
-        list.addBig(intSlider(
-                "limn.options.alpha",
-                "limn.options.color.tooltip",
-                (config.color() >>> 24) & 0xFF,
-                value -> setChannel(config, 24, value)));
-        list.addBig(intSlider(
-                "limn.options.red",
-                "limn.options.color.tooltip",
-                (config.color() >>> 16) & 0xFF,
-                value -> setChannel(config, 16, value)));
-        list.addBig(intSlider(
-                "limn.options.green",
-                "limn.options.color.tooltip",
-                (config.color() >>> 8) & 0xFF,
-                value -> setChannel(config, 8, value)));
-        list.addBig(intSlider(
-                "limn.options.blue",
-                "limn.options.color.tooltip",
-                config.color() & 0xFF,
-                value -> setChannel(config, 0, value)));
+        list.addSmall(List.of(
+                intSlider("limn.options.green", "limn.options.color.tooltip",
+                        (config.color() >>> 8) & 0xFF, value -> setChannel(config, 8, value)),
+                intSlider("limn.options.blue", "limn.options.color.tooltip",
+                        config.color() & 0xFF, value -> setChannel(config, 0, value))));
 
-        list.addBig(slider(
+        AbstractWidget widthSlider = new StepSlider(
                 "limn.options.width",
                 "limn.options.width.tooltip",
                 OutlinePolicy.MIN_WIDTH,
@@ -77,9 +52,8 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 0.1,
                 config.width(),
                 value -> String.format(Locale.ROOT, "%.2fx", value),
-                config::setWidth));
-
-        list.addBig(slider(
+                config::setWidth);
+        AbstractWidget speedSlider = new StepSlider(
                 "limn.options.rainbow_speed",
                 "limn.options.rainbow_speed.tooltip",
                 OutlinePolicy.MIN_SPEED,
@@ -87,9 +61,10 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 0.1,
                 config.rainbowSpeed(),
                 value -> String.format(Locale.ROOT, "%.1f", value),
-                config::setRainbowSpeed));
+                config::setRainbowSpeed);
+        list.addSmall(List.of(widthSlider, speedSlider));
 
-        list.addBig(slider(
+        AbstractWidget spreadSlider = new StepSlider(
                 "limn.options.rainbow_spread",
                 "limn.options.rainbow_spread.tooltip",
                 OutlinePolicy.MIN_SPREAD,
@@ -97,20 +72,8 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 0.1,
                 config.rainbowSpread(),
                 value -> String.format(Locale.ROOT, "%.2f", value),
-                config::setRainbowSpread));
-
-        AbstractWidget resetButton = Button.builder(
-                        Component.translatable("limn.options.reset"),
-                        button -> {
-                            config.resetToDefaults();
-                            rebuildWidgets();
-                        })
-                .width(WIDE_BUTTON)
-                .build();
-        //? if >=26.2 {
-        list.addBig(resetButton);
-        //?} else
-        /*list.addSmall(List.of(resetButton));*/
+                config::setRainbowSpread);
+        list.addSmall(List.of(spreadSlider, resetButton(config)));
     }
 
     @Override
@@ -119,9 +82,30 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
         LimnClient.saveConfig();
     }
 
-    private static void setChannel(OutlineConfig config, int shift, int value) {
-        int mask = ~(0xFF << shift);
-        config.setColor((config.color() & mask) | ((value & 0xFF) << shift));
+    private AbstractWidget enabledButton(OutlineConfig config) {
+        return Button.builder(enabledLabel(config), button -> {
+                    config.setEnabled(!config.enabled());
+                    button.setMessage(enabledLabel(config));
+                })
+                .width(WIDTH)
+                .tooltip(Tooltip.create(Component.translatable("limn.options.enabled.tooltip")))
+                .build();
+    }
+
+    private static Component enabledLabel(OutlineConfig config) {
+        Component state = Component.translatable(config.enabled() ? "options.on" : "options.off");
+        return Component.translatable("options.generic_value", Component.translatable("limn.options.enabled"), state);
+    }
+
+    private AbstractWidget modeButton(OutlineConfig config) {
+        return Button.builder(modeLabel(config.mode()), button -> {
+                    config.setMode(OutlinePolicy.isRainbow(config.mode())
+                            ? OutlinePolicy.MODE_SOLID
+                            : OutlinePolicy.MODE_RAINBOW);
+                    rebuildWidgets();
+                })
+                .width(WIDTH)
+                .build();
     }
 
     private static Component modeLabel(String mode) {
@@ -129,54 +113,83 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
         return Component.translatable("limn.options.mode", Component.translatable(key));
     }
 
-    private static OptionInstance<Double> slider(
-            String captionKey,
-            String tooltipKey,
-            double min,
-            double max,
-            double step,
-            double initial,
-            DoubleFunction<String> format,
-            //? if >=26.2 {
-            OptionInstance.ValueUpdateListener<Double> onChange) {
-            //?} else
-            /*java.util.function.Consumer<Double> onChange) {*/
-
-        return new OptionInstance<>(
-                captionKey,
-                OptionInstance.cachedConstantTooltip(Component.translatable(tooltipKey)),
-                (caption, value) -> Component.translatable(
-                        "options.generic_value", caption, Component.literal(format.apply(value))),
-                OptionInstance.UnitDouble.INSTANCE.xmap(
-                        frac -> snap(min, max, step, min + frac * (max - min)),
-                        value -> (snap(min, max, step, value) - min) / (max - min)),
-                snap(min, max, step, initial),
-                onChange);
+    private AbstractWidget resetButton(OutlineConfig config) {
+        return Button.builder(Component.translatable("limn.options.reset"), button -> {
+                    config.resetToDefaults();
+                    rebuildWidgets();
+                })
+                .width(WIDTH)
+                .build();
     }
 
-    private static OptionInstance<Integer> intSlider(
-            String captionKey,
-            String tooltipKey,
-            int initial,
-            //? if >=26.2 {
-            OptionInstance.ValueUpdateListener<Integer> onChange) {
-            //?} else
-            /*java.util.function.Consumer<Integer> onChange) {*/
-
-        IntFunction<String> format = value -> Integer.toString(value);
-        return new OptionInstance<>(
-                captionKey,
-                OptionInstance.cachedConstantTooltip(Component.translatable(tooltipKey)),
-                (caption, value) -> Component.translatable(
-                        "options.generic_value", caption, Component.literal(format.apply(value))),
-                new OptionInstance.IntRange(0, 255),
-                Math.max(0, Math.min(255, initial)),
-                onChange);
+    private static void setChannel(OutlineConfig config, int shift, int value) {
+        int mask = ~(0xFF << shift);
+        config.setColor((config.color() & mask) | ((value & 0xFF) << shift));
     }
 
-    private static double snap(double min, double max, double step, double value) {
-        double clamped = Math.max(min, Math.min(max, value));
-        double snapped = min + Math.round((clamped - min) / step) * step;
-        return Math.max(min, Math.min(max, snapped));
+    private static AbstractWidget intSlider(String captionKey, String tooltipKey, int initial, IntConsumer onChange) {
+        return new StepSlider(
+                captionKey,
+                tooltipKey,
+                0,
+                255,
+                1,
+                initial,
+                value -> Integer.toString((int) value),
+                value -> onChange.accept((int) value));
+    }
+
+    private static final class StepSlider extends AbstractSliderButton {
+        private final String captionKey;
+        private final double min;
+        private final double max;
+        private final double step;
+        private final DoubleFunction<String> format;
+        private final DoubleConsumer onChange;
+
+        StepSlider(
+                String captionKey,
+                String tooltipKey,
+                double min,
+                double max,
+                double step,
+                double initial,
+                DoubleFunction<String> format,
+                DoubleConsumer onChange) {
+
+            super(0, 0, WIDTH, HEIGHT, Component.empty(), 0.0);
+            this.captionKey = captionKey;
+            this.min = min;
+            this.max = max;
+            this.step = step;
+            this.format = format;
+            this.onChange = onChange;
+            this.value = (snap(initial) - min) / (max - min);
+            setTooltip(Tooltip.create(Component.translatable(tooltipKey)));
+            updateMessage();
+        }
+
+        private double snap(double raw) {
+            double clamped = Math.max(min, Math.min(max, raw));
+            double snapped = min + Math.round((clamped - min) / step) * step;
+            return Math.max(min, Math.min(max, snapped));
+        }
+
+        private double current() {
+            return snap(min + value * (max - min));
+        }
+
+        @Override
+        protected void updateMessage() {
+            Component shown = Component.literal(format.apply(current()));
+            setMessage(Component.translatable("options.generic_value", Component.translatable(captionKey), shown));
+        }
+
+        @Override
+        protected void applyValue() {
+            double snapped = current();
+            value = (snapped - min) / (max - min);
+            onChange.accept(snapped);
+        }
     }
 }
