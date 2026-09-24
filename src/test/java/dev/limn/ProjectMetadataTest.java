@@ -66,6 +66,22 @@ class ProjectMetadataTest {
     }
 
     @Test
+    void forgeMetadata() throws IOException {
+        assumeTrue(has("META-INF/mods.toml"));
+        String toml;
+        try (InputStream in = ProjectMetadataTest.class.getClassLoader().getResourceAsStream("META-INF/mods.toml")) {
+            toml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        assertTrue(toml.contains("modId=\"limn\""), toml);
+        assertTrue(toml.contains("displayName=\"Limn\""), toml);
+        assertTrue(toml.contains("modId=\"forge\""), toml);
+        assertFalse(toml.contains("${"), "placeholders must be expanded");
+        assertEquals("limn.refmap.json", resourceJson("limn.mixins.json").get("refmap").getAsString());
+        assertEquals(15, resourceJson("pack.mcmeta").getAsJsonObject("pack").get("pack_format").getAsInt());
+        assertClassExists("dev.limn.forge.LimnForge");
+    }
+
+    @Test
     void entrypointsExist() throws IOException {
         assumeTrue(has("fabric.mod.json"));
         JsonObject mod = resourceJson("fabric.mod.json");

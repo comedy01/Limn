@@ -2,9 +2,9 @@
 
 Recolor the box drawn around the block you are looking at. Pick any color with the RGB sliders, or switch to Rainbow for hues that flow along the edges.
 
-Limn is a small client-side mod for Minecraft on Fabric and NeoForge, compatible with Mod Menu on Fabric.
+Limn is a small client-side mod for Minecraft on Fabric, NeoForge and Forge, compatible with Mod Menu on Fabric.
 
-Supported versions: 1.20 to 26.3 on Fabric, 1.21 to 26.3 on NeoForge.
+Supported versions: 1.20 to 26.3 on Fabric, 1.21 to 26.3 on NeoForge, 1.20.1 on Forge.
 
 ## Features
 
@@ -30,6 +30,12 @@ Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings scr
 2. Put the NeoForge Limn jar for your version in your `mods` folder.
 3. Start the game. The settings screen is in *Mods > Limn > Config*.
 
+**Forge**
+
+1. Install [Forge](https://files.minecraftforge.net/) for Minecraft 1.20.1.
+2. Put the Forge Limn jar in your `mods` folder.
+3. Start the game. The settings screen is in *Mods > Limn > Config*.
+
 ## Settings
 
 | Setting | Range | Default | What it does |
@@ -41,7 +47,7 @@ Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings scr
 | Rainbow Speed | 0.1 - 5 | 1 | How fast the rainbow cycles |
 | Rainbow Spread | 0 - 3 | 1 | How much the color changes across one block |
 
-With the settings screen (Mod Menu on Fabric, the Mods list on NeoForge), changes apply straight away and are saved when you close the screen. The screen also has a *Reset to Defaults* button.
+With the settings screen (Mod Menu on Fabric, the Mods list on NeoForge and Forge), changes apply straight away and are saved when you close the screen. The screen also has a *Reset to Defaults* button.
 
 Without Mod Menu you can edit `config/limn.json` in your game folder and restart the game:
 
