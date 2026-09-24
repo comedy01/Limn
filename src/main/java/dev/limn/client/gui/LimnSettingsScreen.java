@@ -10,16 +10,14 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleFunction;
 import java.util.function.IntConsumer;
 
-public final class LimnSettingsScreen extends OptionsSubScreen {
+public final class LimnSettingsScreen extends LimnOptionsScreen {
     private static final int WIDTH = 150;
     private static final int HEIGHT = 20;
 
@@ -31,19 +29,19 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
     protected void addOptions() {
         OutlineConfig config = LimnClient.config();
 
-        list.addSmall(List.of(enabledButton(config), modeButton(config)));
+        addRow(enabledButton(config), modeButton(config));
 
-        list.addSmall(List.of(
+        addRow(
                 intSlider("limn.options.alpha", "limn.options.color.tooltip",
                         (config.color() >>> 24) & 0xFF, value -> setChannel(config, 24, value)),
                 intSlider("limn.options.red", "limn.options.color.tooltip",
-                        (config.color() >>> 16) & 0xFF, value -> setChannel(config, 16, value))));
+                        (config.color() >>> 16) & 0xFF, value -> setChannel(config, 16, value)));
 
-        list.addSmall(List.of(
+        addRow(
                 intSlider("limn.options.green", "limn.options.color.tooltip",
                         (config.color() >>> 8) & 0xFF, value -> setChannel(config, 8, value)),
                 intSlider("limn.options.blue", "limn.options.color.tooltip",
-                        config.color() & 0xFF, value -> setChannel(config, 0, value))));
+                        config.color() & 0xFF, value -> setChannel(config, 0, value)));
 
         AbstractWidget widthSlider = new StepSlider(
                 "limn.options.width",
@@ -67,7 +65,7 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 config.rainbowSpeed(),
                 value -> String.format(Locale.ROOT, "%.1f", value),
                 config::setRainbowSpeed);
-        list.addSmall(List.of(widthSlider, speedSlider));
+        addRow(widthSlider, speedSlider);
 
         AbstractWidget spreadSlider = new StepSlider(
                 "limn.options.rainbow_spread",
@@ -78,7 +76,7 @@ public final class LimnSettingsScreen extends OptionsSubScreen {
                 config.rainbowSpread(),
                 value -> String.format(Locale.ROOT, "%.2f", value),
                 config::setRainbowSpread);
-        list.addSmall(List.of(spreadSlider, resetButton(config)));
+        addRow(spreadSlider, resetButton(config));
     }
 
     @Override

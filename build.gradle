@@ -52,7 +52,9 @@ dependencies {
 		mappings loom.officialMojangMappings()
 		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 		modImplementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
-		modCompileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
+		modCompileOnly("com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}") {
+			transitive = false
+		}
 	} else {
 		implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 		implementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
