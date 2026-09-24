@@ -9,6 +9,7 @@ def remap = minecraftVersion.startsWith("1.")
 def versionProps = new Properties()
 file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
 
+def gameVersion = versionProps.getProperty("minecraft", minecraftVersion)
 def packs = versionProps.getProperty("packs").split(",")
 def label = versionProps.getProperty("label")
 def javaVersion = versionProps.getProperty("java").toInteger()
@@ -46,7 +47,7 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${minecraftVersion}"
+	minecraft "com.mojang:minecraft:${gameVersion}"
 	if (remap) {
 		mappings loom.officialMojangMappings()
 		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
