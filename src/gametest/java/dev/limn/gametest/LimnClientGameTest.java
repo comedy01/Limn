@@ -100,6 +100,15 @@ public class LimnClientGameTest implements FabricClientGameTest {
         check(config.rainbowSpeed() == OutlinePolicy.DEFAULT_SPEED, "reset did not restore rainbow speed");
         log("screenshot: " + context.takeScreenshot("limn-settings-after-reset"));
 
+        int speedSliders = context.computeOnClient(client -> countSliders(GameScreens.current(client), "Rainbow Speed"));
+        check(speedSliders == 1, "reset left " + speedSliders + " rainbow speed sliders on the screen");
+        dragSliderToMax(context, "Rainbow Speed");
+        context.waitTicks(5);
+        check(config.rainbowSpeed() == OutlinePolicy.MAX_SPEED, "dragging the rainbow speed slider after reset did not change the config");
+        String speedShown = context.computeOnClient(client ->
+                findSlider(GameScreens.current(client), "Rainbow Speed").getMessage().getString());
+        check(speedShown.contains("5.0"), "the rainbow speed slider did not move after reset: " + speedShown);
+
         config.setWidth(2.5);
         context.setScreen(() -> null);
         context.waitTicks(5);
@@ -162,6 +171,16 @@ public class LimnClientGameTest implements FabricClientGameTest {
             }
         }
         return null;
+    }
+
+    private static int countSliders(GuiEventListener node, String captionText) {
+        int count = node instanceof AbstractSliderButton slider && slider.getMessage().getString().contains(captionText) ? 1 : 0;
+        if (node instanceof ContainerEventHandler container) {
+            for (GuiEventListener child : container.children()) {
+                count += countSliders(child, captionText);
+            }
+        }
+        return count;
     }
 
     private static Button findButton(GuiEventListener node, String translationKey) {

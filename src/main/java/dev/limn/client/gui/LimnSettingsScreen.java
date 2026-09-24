@@ -119,7 +119,7 @@ public final class LimnSettingsScreen extends LimnOptionsScreen {
     private AbstractWidget resetButton(OutlineConfig config) {
         return Button.builder(Component.translatable("limn.options.reset"), button -> {
                     config.resetToDefaults();
-                    rebuildWidgets();
+                    ScreenOpener.open(minecraft, new LimnSettingsScreen(lastScreen, options));
                 })
                 .width(WIDTH)
                 .build();
