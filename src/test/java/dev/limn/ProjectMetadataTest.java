@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -29,8 +30,13 @@ class ProjectMetadataTest {
         }
     }
 
+    private static boolean has(String name) {
+        return ProjectMetadataTest.class.getClassLoader().getResource(name) != null;
+    }
+
     @Test
     void modJson() throws IOException {
+        assumeTrue(has("fabric.mod.json"));
         JsonObject mod = resourceJson("fabric.mod.json");
         assertEquals("limn", mod.get("id").getAsString());
         assertEquals("Limn", mod.get("name").getAsString());
@@ -38,7 +44,7 @@ class ProjectMetadataTest {
         assertFalse(mod.get("version").getAsString().contains("$"), "version placeholder must be expanded");
 
         JsonObject entrypoints = mod.getAsJsonObject("entrypoints");
-        assertEquals("dev.limn.client.LimnClient", entrypoints.getAsJsonArray("client").get(0).getAsString());
+        assertEquals("dev.limn.fabric.LimnFabric", entrypoints.getAsJsonArray("client").get(0).getAsString());
 
         JsonObject depends = mod.getAsJsonObject("depends");
         assertFalse(depends.has("modmenu"), "Mod Menu must stay optional");
@@ -46,7 +52,22 @@ class ProjectMetadataTest {
     }
 
     @Test
-    void entrypointsAndMixinsExist() throws IOException {
+    void neoforgeMetadata() throws IOException {
+        assumeTrue(has("META-INF/neoforge.mods.toml"));
+        String toml;
+        try (InputStream in = ProjectMetadataTest.class.getClassLoader().getResourceAsStream("META-INF/neoforge.mods.toml")) {
+            toml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        assertTrue(toml.contains("modId=\"limn\""), toml);
+        assertTrue(toml.contains("displayName=\"Limn\""), toml);
+        assertTrue(toml.contains("config=\"limn.mixins.json\""), toml);
+        assertFalse(toml.contains("${"), "placeholders must be expanded");
+        assertClassExists("dev.limn.neoforge.LimnNeoForge");
+    }
+
+    @Test
+    void entrypointsExist() throws IOException {
+        assumeTrue(has("fabric.mod.json"));
         JsonObject mod = resourceJson("fabric.mod.json");
         JsonObject entrypoints = mod.getAsJsonObject("entrypoints");
         for (String key : entrypoints.keySet()) {
@@ -54,7 +75,10 @@ class ProjectMetadataTest {
                 assertClassExists(entry.getAsString());
             }
         }
+    }
 
+    @Test
+    void mixinsExist() throws IOException {
         JsonObject mixins = resourceJson("limn.mixins.json");
         assertEquals("dev.limn.mixin", mixins.get("package").getAsString());
         JsonArray client = mixins.getAsJsonArray("client");
@@ -64,7 +88,6 @@ class ProjectMetadataTest {
         }
         assertFalse(mixins.has("mixins"), "all mixins are client-only");
         assertFalse(mixins.has("server"));
-        assertTrue(mod.getAsJsonArray("mixins").get(0).getAsString().equals("limn.mixins.json"));
     }
 
     private static void assertClassExists(String className) {

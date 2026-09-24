@@ -21,10 +21,10 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"dev.limn.client.LimnClient"
+			"dev.limn.fabric.LimnFabric"
 		],
 		"modmenu": [
-			"dev.limn.compat.LimnModMenu"
+			"dev.limn.fabric.LimnModMenu"
 		]
 	},
 	"mixins": [

@@ -1,33 +1,43 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
 	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
+	id 'net.neoforged.moddev' version "${moddev_version}" apply false
 }
 
+def loader = project.property("loader")
 def minecraftVersion = project.minecraft_version
-def remap = minecraftVersion.startsWith("1.")
+def neoforge = loader == "neoforge"
+def remap = !neoforge && minecraftVersion.startsWith("1.")
 
 def versionProps = new Properties()
-file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
+def propsFile = neoforge ? file("versions/neoforge/${minecraftVersion}.properties") : file("versions/${minecraftVersion}.properties")
+propsFile.withInputStream { versionProps.load(it) }
 
 def gameVersion = versionProps.getProperty("minecraft", minecraftVersion)
 def packs = versionProps.getProperty("packs").split(",")
 def label = versionProps.getProperty("label")
 def javaVersion = versionProps.getProperty("java").toInteger()
-def gametest = versionProps.getProperty("gametest", "true") == "true"
+def gametest = !neoforge && versionProps.getProperty("gametest", "true") == "true"
 
 def expansions = [java_version: javaVersion]
 versionProps.stringPropertyNames().each { expansions[it] = versionProps.getProperty(it) }
 
-apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
+if (neoforge) {
+	apply plugin: 'net.neoforged.moddev'
+} else {
+	apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
+}
 
 version = "${project.mod_version}+mc${label}"
 expansions.version = project.version
 group = project.maven_group
 
 base {
-	archivesName = project.archives_base_name
+	archivesName = neoforge ? "${project.archives_base_name}-neoforge" : project.archives_base_name
 }
 
+sourceSets.main.java.srcDir "src/loader/${loader}/java"
+sourceSets.main.resources.srcDir "src/loader/${loader}/resources"
 packs.each { pack ->
 	sourceSets.main.java.srcDir "src/compat/${pack}/java"
 }
@@ -47,8 +57,11 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${gameVersion}"
-	if (remap) {
+	if (neoforge) {
+		testImplementation "com.google.code.gson:gson:2.11.0"
+		testImplementation "org.slf4j:slf4j-api:2.0.16"
+	} else if (remap) {
+		minecraft "com.mojang:minecraft:${gameVersion}"
 		mappings loom.officialMojangMappings()
 		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 		modImplementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
@@ -56,6 +69,7 @@ dependencies {
 			transitive = false
 		}
 	} else {
+		minecraft "com.mojang:minecraft:${gameVersion}"
 		implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 		implementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
 		compileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
@@ -65,6 +79,34 @@ dependencies {
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+if (neoforge) {
+	sourceSets {
+		nftest
+	}
+
+	dependencies {
+		nftestImplementation sourceSets.main.output
+	}
+
+	neoForge {
+		version = versionProps.getProperty("neoforge_version")
+		addModdingDependenciesTo(sourceSets.nftest)
+		runs {
+			client {
+				client()
+			}
+		}
+		mods {
+			limn {
+				sourceSet sourceSets.main
+			}
+			limn_test {
+				sourceSet sourceSets.nftest
+			}
+		}
+	}
+}
+
 test {
 	useJUnitPlatform()
 }
@@ -72,7 +114,7 @@ test {
 processResources {
 	inputs.properties(expansions)
 
-	filesMatching(["fabric.mod.json", "limn.mixins.json"]) {
+	filesMatching(["fabric.mod.json", "limn.mixins.json", "META-INF/neoforge.mods.toml"]) {
 		expand expansions
 	}
 }

@@ -1,19 +1,21 @@
 package dev.limn.client;
 
 import dev.limn.config.OutlineConfig;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;
 
-public final class LimnClient implements ClientModInitializer {
+public final class LimnClient {
     public static final String MOD_ID = "limn";
 
     private static OutlineConfig config = new OutlineConfig();
+    private static Path configPath;
 
-    @Override
-    public void onInitializeClient() {
-        config = OutlineConfig.load(configPath());
+    private LimnClient() {
+    }
+
+    public static void init(Path configDir) {
+        configPath = configDir.resolve(OutlineConfig.FILE_NAME);
+        config = OutlineConfig.load(configPath);
     }
 
     public static OutlineConfig config() {
@@ -21,10 +23,10 @@ public final class LimnClient implements ClientModInitializer {
     }
 
     public static Path configPath() {
-        return FabricLoader.getInstance().getConfigDir().resolve(OutlineConfig.FILE_NAME);
+        return configPath;
     }
 
     public static void saveConfig() {
-        config.saveQuietly(configPath());
+        config.saveQuietly(configPath);
     }
 }
