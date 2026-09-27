@@ -4,7 +4,7 @@ Recolor the box drawn around the block you are looking at. Pick any color with t
 
 Limn is a small client-side mod for Minecraft on Fabric, NeoForge and Forge, compatible with Mod Menu on Fabric.
 
-Supported versions: 1.20 to 26.3 on Fabric, 1.21 to 26.3 on NeoForge, 1.20.1 on Forge.
+Supported versions: 1.18.2, 1.19.2 and 1.20 to 26.3 on Fabric, 1.21 to 26.3 on NeoForge, 1.18.2, 1.19.2 and 1.20.1 on Forge.
 
 ## Features
 
@@ -32,8 +32,8 @@ Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings scr
 
 **Forge**
 
-1. Install [Forge](https://files.minecraftforge.net/) for Minecraft 1.20.1.
-2. Put the Forge Limn jar in your `mods` folder.
+1. Install [Forge](https://files.minecraftforge.net/) for Minecraft 1.18.2, 1.19.2 or 1.20.1.
+2. Put the Forge Limn jar for your version in your `mods` folder.
 3. Start the game. The settings screen is in *Mods > Limn > Config*.
 
 ## Settings

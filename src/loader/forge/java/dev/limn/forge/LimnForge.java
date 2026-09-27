@@ -1,9 +1,7 @@
 package dev.limn.forge;
 
 import dev.limn.client.LimnClient;
-import dev.limn.client.gui.LimnSettingsScreen;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -24,9 +22,6 @@ public final class LimnForge {
 
         LimnClient.init(FMLPaths.CONFIGDIR.get());
 
-        context.registerExtensionPoint(
-                ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory(
-                        (client, parent) -> new LimnSettingsScreen(parent, client.options)));
+        ConfigScreens.register(context);
     }
 }

@@ -129,7 +129,12 @@ if (forge) {
 	}
 
 	legacyForge {
-		version = versionProps.getProperty("forge_version")
+		if (versionProps.getProperty("neoforge_version") != null) {
+			// NeoForge 1.20.1 is a Forge fork; only used to launch-check the Forge 1.20.1 code there
+			enable { neoForgeVersion = versionProps.getProperty("neoforge_version") }
+		} else {
+			version = versionProps.getProperty("forge_version")
+		}
 		addModdingDependenciesTo(sourceSets.forgetest)
 		runs {
 			client {
@@ -163,7 +168,7 @@ test {
 processResources {
 	inputs.properties(expansions)
 
-	filesMatching(["fabric.mod.json", "limn.mixins.json", "META-INF/neoforge.mods.toml", "META-INF/mods.toml"]) {
+	filesMatching(["fabric.mod.json", "limn.mixins.json", "META-INF/neoforge.mods.toml", "META-INF/mods.toml"] + (forge ? ["pack.mcmeta"] : [])) {
 		expand expansions
 	}
 	if (forge) {
@@ -194,6 +199,31 @@ jar {
 
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}" }
+	}
+}
+
+// Launch check for versions without the client gametest API: ./gradlew runClient -Pminecraft_version=1.19.2 -Pselftest
+if (fabric && !gametest && project.hasProperty("selftest")) {
+	sourceSets {
+		fabrictest
+	}
+	sourceSets.fabrictest.compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+	sourceSets.fabrictest.runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+
+	loom {
+		mods {
+			limn {
+				sourceSet sourceSets.main
+			}
+			limn_test {
+				sourceSet sourceSets.fabrictest
+			}
+		}
+		runs {
+			client {
+				source sourceSets.fabrictest
+			}
+		}
 	}
 }
 

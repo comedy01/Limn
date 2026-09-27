@@ -1,0 +1,15 @@
+{
+	"schemaVersion": 1,
+	"id": "limn_test",
+	"version": "1.0.0",
+	"name": "Limn self test",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.limn.fabrictest.LimnSelfTest"
+		]
+	},
+	"depends": {
+		"limn": "*"
+	}
+}
