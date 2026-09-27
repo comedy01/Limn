@@ -5,8 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
 import dev.limn.outline.OutlinePolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -20,7 +20,7 @@ public final class OutlineConfig {
     public static final String FILE_NAME = "limn.json";
     public static final boolean DEFAULT_ENABLED = true;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("limn");
+    private static final Logger LOGGER = LogManager.getLogger("limn");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     @SerializedName("enabled")
@@ -135,7 +135,7 @@ public final class OutlineConfig {
             Files.createDirectories(parent);
         }
         Path temp = absolute.resolveSibling(absolute.getFileName() + ".tmp");
-        Files.writeString(temp, GSON.toJson(this) + System.lineSeparator(), StandardCharsets.UTF_8);
+        Files.write(temp, (GSON.toJson(this) + System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
         try {
             Files.move(temp, absolute, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (AtomicMoveNotSupportedException e) {

@@ -1,0 +1,119 @@
+plugins {
+	id 'dev.architectury.loom' version '1.17.493'
+}
+
+def root = file('..')
+def minecraftVersion = project.findProperty('minecraft_version') ?: '1.16.5'
+
+def rootProps = new Properties()
+file("${root}/gradle.properties").withInputStream { rootProps.load(it) }
+def versionProps = new Properties()
+file("${root}/versions/forge/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
+
+def modId = rootProps.archives_base_name
+def packs = versionProps.getProperty('packs').split(',')
+def javaVersion = versionProps.getProperty('java').toInteger()
+def selftest = project.hasProperty('selftest')
+
+version = "${rootProps.mod_version}+mc${versionProps.label}"
+group = rootProps.maven_group
+
+def expansions = [java_version: javaVersion, version: project.version]
+versionProps.stringPropertyNames().each { expansions[it] = versionProps.getProperty(it) }
+
+base {
+	archivesName = "${modId}-forge"
+}
+
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
+}
+
+sourceSets {
+	main {
+		java.srcDirs = ["${root}/src/main/java", "${root}/src/loader/forge-116/java"] + packs.collect { "${root}/src/compat/${it}/java" }
+		resources.srcDirs = ["${root}/src/main/resources", "${root}/src/loader/forge/resources"]
+		resources.exclude "${modId}.mixins.json"
+	}
+	if (selftest) {
+		forgetest {
+			java.srcDirs = ["${root}/src/forgetest-116/java"]
+			resources.srcDirs = ["${root}/src/forgetest/resources"]
+			compileClasspath += main.compileClasspath + main.output
+			runtimeClasspath += main.runtimeClasspath + main.output
+		}
+	}
+}
+
+loom {
+	runs {
+		client {
+			if (selftest) {
+				source sourceSets.forgetest
+			}
+		}
+		remove server
+	}
+	if (selftest) {
+		mods {
+			main {
+				sourceSet sourceSets.main
+			}
+			limn_test {
+				sourceSet sourceSets.forgetest
+			}
+		}
+	}
+}
+
+repositories {
+	maven { url = 'https://maven.minecraftforge.net/' }
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${minecraftVersion}"
+	mappings loom.officialMojangMappings()
+	forge "net.minecraftforge:forge:${versionProps.forge_version}"
+	annotationProcessor 'com.pkware.jabel:jabel-javac-plugin:1.0.1-2'
+	if (selftest) {
+		forgetestAnnotationProcessor 'com.pkware.jabel:jabel-javac-plugin:1.0.1-2'
+	}
+}
+
+processResources {
+	inputs.properties(expansions)
+	filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+		expand expansions
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(17) }
+	sourceCompatibility = '17'
+	options.release = javaVersion
+	options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaExec).configureEach {
+	javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(javaVersion) }
+}
+
+jar {
+	from("${root}/LICENSE") {
+		rename { "${it}_${base.archivesName.get()}" }
+	}
+}
+
+if (selftest) {
+	def forgetestJar = tasks.register('forgetestJar', Jar) {
+		from sourceSets.forgetest.output
+		from(tasks.named('processResources')) { include 'pack.mcmeta' }
+		archiveBaseName = "${modId}-selftest"
+		destinationDirectory = layout.buildDirectory.dir('devlibs')
+	}
+	def remapForgetestJar = tasks.register('remapForgetestJar', net.fabricmc.loom.task.RemapJarTask) {
+		inputFile = forgetestJar.flatMap { it.archiveFile }
+		archiveBaseName = "${modId}-selftest"
+	}
+	tasks.named('build') { dependsOn remapForgetestJar }
+}

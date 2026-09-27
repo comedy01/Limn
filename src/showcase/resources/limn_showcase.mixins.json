@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "dev.limn.showcase.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"client": [
+		"GameRendererHandMixin",
+		"LimnRuntimeClockMixin",
+		"MinecraftFrameMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
