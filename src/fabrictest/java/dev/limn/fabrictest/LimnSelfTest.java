@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.limn.client.LimnClient;
 import dev.limn.client.LimnRuntime;
+import dev.limn.client.MiningProgress;
 import dev.limn.client.gui.LimnSettingsScreen;
 import dev.limn.outline.OutlinePolicy;
 import net.fabricmc.api.ClientModInitializer;
@@ -70,7 +71,9 @@ public final class LimnSelfTest implements ClientModInitializer {
         LimnClient.config().setEnabled(before);
 
         boolean drawn = true;
-        for (String mode : new String[] {OutlinePolicy.MODE_SOLID, OutlinePolicy.MODE_RAINBOW}) {
+        for (String mode : new String[] {
+                OutlinePolicy.MODE_SOLID, OutlinePolicy.MODE_RAINBOW,
+                OutlinePolicy.MODE_CHASE, OutlinePolicy.MODE_MINING}) {
             try {
                 LimnClient.config().setMode(mode);
                 BufferBuilder buffer = new BufferBuilder(4096);
@@ -84,9 +87,17 @@ public final class LimnSelfTest implements ClientModInitializer {
         }
         LimnClient.config().setMode(OutlinePolicy.MODE_SOLID);
 
-        boolean pass = mixinApplied && config && screen && toggled && drawn;
+        boolean progress;
+        try {
+            progress = MiningProgress.available() && MiningProgress.current() == 0.0D;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            progress = false;
+        }
+
+        boolean pass = mixinApplied && config && screen && toggled && drawn && progress;
         System.out.println("[Limn selftest] mixinApplied=" + mixinApplied
-                + " config=" + config + " screen=" + screen + " toggled=" + toggled + " drawn=" + drawn
+                + " config=" + config + " screen=" + screen + " toggled=" + toggled + " drawn=" + drawn + " progress=" + progress
                 + " RESULT=" + (pass ? "PASS" : "FAIL"));
         client.setScreen(null);
         client.stop();

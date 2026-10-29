@@ -1,6 +1,7 @@
 package dev.limn.nftest;
 
 import dev.limn.client.LimnClient;
+import dev.limn.client.MiningProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.neoforged.api.distmarker.Dist;
@@ -36,9 +37,17 @@ public final class LimnSelfTest {
         }
 
         boolean config = LimnClient.configPath() != null && Files.exists(LimnClient.configPath());
-        boolean pass = mixinApplied && config;
+        boolean progress;
+        try {
+            progress = MiningProgress.available() && MiningProgress.current() == 0.0D;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            progress = false;
+        }
+
+        boolean pass = mixinApplied && config && progress;
         System.out.println("[Limn selftest] mixinApplied=" + mixinApplied
-                + " config=" + config + " RESULT=" + (pass ? "PASS" : "FAIL"));
+                + " config=" + config + " progress=" + progress + " RESULT=" + (pass ? "PASS" : "FAIL"));
         client.stop();
     }
 }

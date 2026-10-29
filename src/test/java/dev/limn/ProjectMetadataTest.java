@@ -98,7 +98,7 @@ class ProjectMetadataTest {
         JsonObject mixins = resourceJson("limn.mixins.json");
         assertEquals("dev.limn.mixin", mixins.get("package").getAsString());
         JsonArray client = mixins.getAsJsonArray("client");
-        assertEquals(1, client.size());
+        assertEquals(2, client.size());
         for (JsonElement entry : client) {
             assertClassExists("dev.limn.mixin." + entry.getAsString());
         }

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.limn.client.LimnClient;
 import dev.limn.client.LimnRuntime;
+import dev.limn.client.MiningProgress;
 import dev.limn.client.gui.LimnSettingsScreen;
 import dev.limn.outline.OutlinePolicy;
 import net.minecraft.client.Minecraft;
@@ -46,6 +47,7 @@ public final class LimnSelfTest {
     private boolean keptVanillaWhenDisabled;
     private boolean screenOpened;
     private boolean toggled;
+    private boolean cycled;
 
     public LimnSelfTest() {
         MinecraftForge.EVENT_BUS.addListener(this::onTick);
@@ -91,6 +93,12 @@ public final class LimnSelfTest {
             LimnClient.config().setMode(OutlinePolicy.MODE_RAINBOW);
         } else if (inWorld == 140) {
             screenshot(client, "limn-116-rainbow.png");
+            LimnClient.config().setMode(OutlinePolicy.MODE_CHASE);
+        } else if (inWorld == 150) {
+            screenshot(client, "limn-116-chase.png");
+            LimnClient.config().setMode(OutlinePolicy.MODE_MINING);
+        } else if (inWorld == 160) {
+            screenshot(client, "limn-116-mining.png");
             LimnClient.config().setEnabled(false);
             replaced = 0;
             highlights = 0;
@@ -112,6 +120,16 @@ public final class LimnSelfTest {
             }
             toggled = screenOpened && LimnClient.config().enabled() != before;
             LimnClient.config().setEnabled(before);
+            if (screenOpened) {
+                cycled = true;
+                String[] expected = {
+                        OutlinePolicy.MODE_RAINBOW, OutlinePolicy.MODE_CHASE,
+                        OutlinePolicy.MODE_MINING, OutlinePolicy.MODE_SOLID};
+                for (String mode : expected) {
+                    client.screen.mouseClicked(toggleX(client) + 160, toggleY(client), 0);
+                    cycled &= mode.equals(LimnClient.config().mode());
+                }
+            }
             finish(client);
         }
     }
@@ -125,7 +143,9 @@ public final class LimnSelfTest {
                 .orElse(false);
 
         boolean drawn = true;
-        for (String mode : new String[] {OutlinePolicy.MODE_SOLID, OutlinePolicy.MODE_RAINBOW}) {
+        for (String mode : new String[] {
+                OutlinePolicy.MODE_SOLID, OutlinePolicy.MODE_RAINBOW,
+                OutlinePolicy.MODE_CHASE, OutlinePolicy.MODE_MINING}) {
             try {
                 LimnClient.config().setMode(mode);
                 BufferBuilder buffer = new BufferBuilder(4096);
@@ -140,10 +160,20 @@ public final class LimnSelfTest {
         LimnClient.config().resetToDefaults();
         LimnClient.saveConfig();
 
-        boolean pass = replacedWhenEnabled && keptVanillaWhenDisabled && config && modsMenu && screenOpened && toggled && drawn;
+        boolean progress;
+        try {
+            progress = MiningProgress.available() && MiningProgress.current() == 0.0D;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            progress = false;
+        }
+
+        boolean pass = replacedWhenEnabled && keptVanillaWhenDisabled && config && modsMenu && screenOpened && toggled
+                && cycled && drawn && progress;
         System.out.println("[Limn selftest] replacedWhenEnabled=" + replacedWhenEnabled
                 + " keptVanillaWhenDisabled=" + keptVanillaWhenDisabled + " config=" + config + " modsMenu=" + modsMenu
-                + " screen=" + screenOpened + " toggled=" + toggled + " drawn=" + drawn
+                + " screen=" + screenOpened + " toggled=" + toggled + " cycled=" + cycled + " drawn=" + drawn
+                + " progress=" + progress
                 + " RESULT=" + (pass ? "PASS" : "FAIL"));
         client.setScreen(null);
         client.stop();

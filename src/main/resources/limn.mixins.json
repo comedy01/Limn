@@ -4,7 +4,8 @@
 	"package": "dev.limn.mixin",
 	"compatibilityLevel": "JAVA_${java_version}",
 	"client": [
-		"BlockOutlineMixin"
+		"BlockOutlineMixin",
+		"GameModeAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

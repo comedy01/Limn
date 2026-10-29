@@ -2,6 +2,7 @@ package dev.limn.gametest;
 
 import dev.limn.client.LimnClient;
 import dev.limn.client.LimnRuntime;
+import dev.limn.client.MiningProgress;
 import dev.limn.client.gui.LimnSettingsScreen;
 import dev.limn.config.OutlineConfig;
 import dev.limn.outline.OutlinePolicy;
@@ -24,12 +25,12 @@ public class LimnClientGameTest implements FabricClientGameTest {
     public void runTest(ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             context.waitTicks(20);
-            runInWorld(context);
+            runInWorld(context, world);
         }
         log("ALL CHECKS PASSED");
     }
 
-    private void runInWorld(ClientGameTestContext context) {
+    private void runInWorld(ClientGameTestContext context, TestSingleplayerContext world) {
         OutlineConfig config = LimnClient.config();
         config.resetToDefaults();
 
@@ -54,6 +55,32 @@ public class LimnClientGameTest implements FabricClientGameTest {
         context.waitTicks(10);
         log("screenshot: " + context.takeScreenshot("limn-rainbow"));
 
+        config.setMode(OutlinePolicy.MODE_CHASE);
+        context.waitTicks(10);
+        log("screenshot: " + context.takeScreenshot("limn-chase"));
+
+        check(MiningProgress.available(), "the mining progress accessor was not applied");
+        check(context.computeOnClient(client -> MiningProgress.current()) == 0.0D,
+                "mining progress is not zero while nothing is being mined");
+        config.setMode(OutlinePolicy.MODE_MINING);
+        world.getServer().runCommand("gamemode survival @a");
+        context.waitTicks(10);
+        context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        double mined = 0.0D;
+        for (int i = 0; i < 8; i++) {
+            context.waitTick();
+            mined = Math.max(mined, context.computeOnClient(client -> MiningProgress.current()));
+        }
+        log("screenshot: " + context.takeScreenshot("limn-mining"));
+        context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        check(mined > 0.0D && mined <= 1.0D, "mining a block reported progress " + mined);
+        log("mining progress seen: " + mined);
+        context.waitTicks(5);
+        check(context.computeOnClient(client -> MiningProgress.current()) == 0.0D,
+                "mining progress did not return to zero after releasing the button");
+        world.getServer().runCommand("gamemode creative @a");
+        context.waitTicks(5);
+
         config.setEnabled(false);
         context.waitTicks(5);
         log("screenshot: " + context.takeScreenshot("limn-disabled"));
@@ -76,10 +103,24 @@ public class LimnClientGameTest implements FabricClientGameTest {
         log("screenshot: " + context.takeScreenshot("limn-settings-mode-toggled"));
         clickButton(context, "limn.options.mode");
         context.waitTicks(5);
-        check(!OutlinePolicy.isRainbow(config.mode()), "clicking the mode button again did not switch back");
+        check(OutlinePolicy.MODE_CHASE.equals(config.mode()), "the second mode click did not switch to Chase");
+        clickButton(context, "limn.options.mode");
+        context.waitTicks(5);
+        check(OutlinePolicy.MODE_MINING.equals(config.mode()), "the third mode click did not switch to Mining Progress");
+        clickButton(context, "limn.options.mode");
+        context.waitTicks(5);
+        check(OutlinePolicy.MODE_SOLID.equals(config.mode()), "the fourth mode click did not return to Solid Color");
+
+        String opacityShown = context.computeOnClient(client ->
+                findSlider(GameScreens.current(client), "Opacity").getMessage().getString());
+        check(opacityShown.contains("255"), "the opacity slider does not start at 255: " + opacityShown);
+        dragSliderToMin(context, "Opacity");
+        context.waitTicks(5);
+        check((config.color() >>> 24) == 1, "the opacity slider minimum is " + (config.color() >>> 24) + ", not 1");
+        config.setColor(OutlinePolicy.DEFAULT_COLOR);
 
         double speedBefore = config.rainbowSpeed();
-        dragSliderToMax(context, "Rainbow Speed");
+        dragSliderToMax(context, "Animation Speed");
         context.waitTicks(5);
         check(config.rainbowSpeed() != speedBefore, "dragging the rainbow speed slider did not change the config");
         log("screenshot: " + context.takeScreenshot("limn-settings-slider-dragged"));
@@ -100,13 +141,13 @@ public class LimnClientGameTest implements FabricClientGameTest {
         check(config.rainbowSpeed() == OutlinePolicy.DEFAULT_SPEED, "reset did not restore rainbow speed");
         log("screenshot: " + context.takeScreenshot("limn-settings-after-reset"));
 
-        int speedSliders = context.computeOnClient(client -> countSliders(GameScreens.current(client), "Rainbow Speed"));
+        int speedSliders = context.computeOnClient(client -> countSliders(GameScreens.current(client), "Animation Speed"));
         check(speedSliders == 1, "reset left " + speedSliders + " rainbow speed sliders on the screen");
-        dragSliderToMax(context, "Rainbow Speed");
+        dragSliderToMax(context, "Animation Speed");
         context.waitTicks(5);
         check(config.rainbowSpeed() == OutlinePolicy.MAX_SPEED, "dragging the rainbow speed slider after reset did not change the config");
         String speedShown = context.computeOnClient(client ->
-                findSlider(GameScreens.current(client), "Rainbow Speed").getMessage().getString());
+                findSlider(GameScreens.current(client), "Animation Speed").getMessage().getString());
         check(speedShown.contains("5.0"), "the rainbow speed slider did not move after reset: " + speedShown);
 
         config.setWidth(2.5);
@@ -140,6 +181,14 @@ public class LimnClientGameTest implements FabricClientGameTest {
     }
 
     private static void dragSliderToMax(ClientGameTestContext context, String captionText) {
+        dragSlider(context, captionText, true);
+    }
+
+    private static void dragSliderToMin(ClientGameTestContext context, String captionText) {
+        dragSlider(context, captionText, false);
+    }
+
+    private static void dragSlider(ClientGameTestContext context, String captionText, boolean toMax) {
         context.getInput().setCursorPos(200.0, 200.0);
         context.getInput().scroll(-20.0);
         context.waitTicks(2);
@@ -150,7 +199,7 @@ public class LimnClientGameTest implements FabricClientGameTest {
             }
             double scale = client.getWindow().getGuiScale();
             return new double[] {
-                    (slider.getX() + slider.getWidth() - 2.0) * scale,
+                    (toMax ? slider.getX() + slider.getWidth() - 2.0 : slider.getX() + 2.0) * scale,
                     (slider.getY() + slider.getHeight() / 2.0) * scale};
         });
         context.getInput().setCursorPos(bounds[0], bounds[1]);

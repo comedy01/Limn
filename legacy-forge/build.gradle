@@ -39,6 +39,7 @@ sourceSets {
 		forgetest {
 			java.srcDirs = ["${root}/src/forgetest-116/java"]
 			resources.srcDirs = ["${root}/src/forgetest/resources"]
+			resources.exclude 'pack.mcmeta'
 			compileClasspath += main.compileClasspath + main.output
 			runtimeClasspath += main.runtimeClasspath + main.output
 		}

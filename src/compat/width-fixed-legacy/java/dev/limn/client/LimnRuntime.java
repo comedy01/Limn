@@ -21,18 +21,20 @@ public final class LimnRuntime {
         OutlineConfig config = LimnClient.config();
         int solid = OutlinePolicy.solidColor(config.color());
         Vector3f normal = new Vector3f();
-        if (!OutlinePolicy.isRainbow(config.mode())) {
-            shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
-                normal.set((float) (x2 - x1), (float) (y2 - y1), (float) (z2 - z1)).normalize().mul(pose.normal());
-                vertex(builder, pose, normal, x1, y1, z1, solid);
-                vertex(builder, pose, normal, x2, y2, z2, solid);
-            });
-            return;
-        }
-        int alpha = solid >>> 24;
+        String mode = config.mode();
         double seconds = System.nanoTime() * 1.0E-9D;
         double speed = config.rainbowSpeed();
         double spread = config.rainbowSpread();
+        double progress = MiningProgress.current();
+        if (!OutlinePolicy.variesAlongEdges(mode, spread)) {
+            int flat = OutlinePolicy.colorAt(mode, solid, seconds, speed, spread, progress, 0.0D, 0.0D, 0.0D);
+            shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+                normal.set((float) (x2 - x1), (float) (y2 - y1), (float) (z2 - z1)).normalize().mul(pose.normal());
+                vertex(builder, pose, normal, x1, y1, z1, flat);
+                vertex(builder, pose, normal, x2, y2, z2, flat);
+            });
+            return;
+        }
         shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
             double dx = x2 - x1;
             double dy = y2 - y1;
@@ -42,15 +44,15 @@ public final class LimnRuntime {
             double px = x1;
             double py = y1;
             double pz = z1;
-            int pieceColor = OutlinePolicy.rainbowArgb(
-                    OutlinePolicy.hue(seconds, speed, spread, px, py, pz), alpha);
+            int pieceColor = OutlinePolicy.colorAt(
+                    mode, solid, seconds, speed, spread, progress, px, py, pz);
             for (int i = 1; i <= pieces; i++) {
                 double t = (double) i / pieces;
                 double nx = x1 + dx * t;
                 double ny = y1 + dy * t;
                 double nz = z1 + dz * t;
-                int nextColor = OutlinePolicy.rainbowArgb(
-                        OutlinePolicy.hue(seconds, speed, spread, nx, ny, nz), alpha);
+                int nextColor = OutlinePolicy.colorAt(
+                        mode, solid, seconds, speed, spread, progress, nx, ny, nz);
                 vertex(builder, pose, normal, px, py, pz, pieceColor);
                 vertex(builder, pose, normal, nx, ny, nz, nextColor);
                 px = nx;

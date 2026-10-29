@@ -31,15 +31,15 @@ public final class LimnSettingsScreen extends LimnOptionsScreen {
         addRow(enabledButton(config), modeButton(config));
 
         addRow(
-                intSlider("limn.options.alpha", "limn.options.color.tooltip",
-                        (config.color() >>> 24) & 0xFF, value -> setChannel(config, 24, value)),
-                intSlider("limn.options.red", "limn.options.color.tooltip",
+                intSlider("limn.options.alpha", "limn.options.alpha.tooltip", 1,
+                        OutlinePolicy.solidColor(config.color()) >>> 24, value -> setChannel(config, 24, value)),
+                intSlider("limn.options.red", "limn.options.color.tooltip", 0,
                         (config.color() >>> 16) & 0xFF, value -> setChannel(config, 16, value)));
 
         addRow(
-                intSlider("limn.options.green", "limn.options.color.tooltip",
+                intSlider("limn.options.green", "limn.options.color.tooltip", 0,
                         (config.color() >>> 8) & 0xFF, value -> setChannel(config, 8, value)),
-                intSlider("limn.options.blue", "limn.options.color.tooltip",
+                intSlider("limn.options.blue", "limn.options.color.tooltip", 0,
                         config.color() & 0xFF, value -> setChannel(config, 0, value)));
 
         AbstractWidget widthSlider = slider(new StepSlider(
@@ -100,15 +100,13 @@ public final class LimnSettingsScreen extends LimnOptionsScreen {
 
     private AbstractWidget modeButton(OutlineConfig config) {
         return new Button(0, 0, WIDTH, HEIGHT, modeLabel(config.mode()), button -> {
-            config.setMode(OutlinePolicy.isRainbow(config.mode())
-                    ? OutlinePolicy.MODE_SOLID
-                    : OutlinePolicy.MODE_RAINBOW);
+            config.setMode(OutlinePolicy.nextMode(config.mode()));
             button.setMessage(modeLabel(config.mode()));
         });
     }
 
     private static Component modeLabel(String mode) {
-        String key = OutlinePolicy.isRainbow(mode) ? "limn.options.mode.rainbow" : "limn.options.mode.solid";
+        String key = "limn.options.mode." + OutlinePolicy.modeKey(mode);
         return Texts.translatable("limn.options.mode", Texts.translatable(key));
     }
 
@@ -124,11 +122,11 @@ public final class LimnSettingsScreen extends LimnOptionsScreen {
         config.setColor((config.color() & mask) | ((value & 0xFF) << shift));
     }
 
-    private AbstractWidget intSlider(String captionKey, String tooltipKey, int initial, IntConsumer onChange) {
+    private AbstractWidget intSlider(String captionKey, String tooltipKey, int min, int initial, IntConsumer onChange) {
         return slider(new StepSlider(
                 captionKey,
                 tooltipKey,
-                0,
+                min,
                 255,
                 1,
                 initial,

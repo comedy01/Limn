@@ -47,6 +47,10 @@ class OutlineConfigTest {
         assertEquals(OutlinePolicy.MODE_SOLID, config.mode());
         config.setMode("rainbow");
         assertEquals(OutlinePolicy.MODE_RAINBOW, config.mode());
+        config.setMode("chase");
+        assertEquals(OutlinePolicy.MODE_CHASE, config.mode());
+        config.setMode("mining progress");
+        assertEquals(OutlinePolicy.MODE_MINING, config.mode());
 
         config.setColor(0x80FF00AA);
         assertEquals(0x80FF00AA, config.color());
@@ -141,9 +145,10 @@ class OutlineConfigTest {
 
     @Test
     void missingAndUnknownKeys() throws IOException {
-        write("{\"width\": 2.5, \"somethingFromAFutureVersion\": [1, 2, 3]}");
+        write("{\"width\": 2.5, \"mode\": \"Chase\", \"somethingFromAFutureVersion\": [1, 2, 3]}");
         OutlineConfig config = OutlineConfig.load(file());
         assertEquals(2.5, config.width());
+        assertEquals(OutlinePolicy.MODE_CHASE, config.mode());
         assertEquals(OutlinePolicy.DEFAULT_SPEED, config.rainbowSpeed());
     }
 

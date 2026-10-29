@@ -1,15 +1,17 @@
 # Limn
 
-Recolor the box drawn around the block you are looking at. Pick any color with the RGB sliders, or switch to Rainbow for hues that flow along the edges.
+Recolor the box drawn around the block you are looking at. Pick any color with the RGB sliders, switch to Rainbow for hues that flow along the edges, let a Chase light run around the block, or watch the outline turn red as you mine.
 
 Limn is a small client-side mod for Minecraft on Fabric, NeoForge and Forge, compatible with Mod Menu on Fabric.
 
-Supported versions: 1.18.2, 1.19.2 and 1.20 to 26.3 on Fabric, 1.21 to 26.3 on NeoForge, 1.18.2, 1.19.2 and 1.20.1 on Forge.
+Supported versions: 1.18.2, 1.19.2 and 1.20 to 26.3 on Fabric, 1.21 to 26.3 on NeoForge, 1.16.5, 1.18.2, 1.19.2 and 1.20.1 on Forge.
 
 ## Features
 
 - **Solid Color** - pick any color and opacity for the outline.
 - **Rainbow** - the outline cycles through every hue and flows along the edges. Speed and spread are both adjustable.
+- **Chase** - a bright band of your color sweeps across a dimmer outline. It uses the same speed and spread settings.
+- **Mining Progress** - the outline starts in your color and fades to red as the block breaks.
 - **Line Width** - make the outline thicker or thinner than vanilla.
 - **Visual only** - it changes how the outline is drawn, not what you can target.
 - **Client-side only** - there is nothing to install on a server.
@@ -32,7 +34,7 @@ Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings scr
 
 **Forge**
 
-1. Install [Forge](https://files.minecraftforge.net/) for Minecraft 1.18.2, 1.19.2 or 1.20.1.
+1. Install [Forge](https://files.minecraftforge.net/) for Minecraft 1.16.5, 1.18.2, 1.19.2 or 1.20.1.
 2. Put the Forge Limn jar for your version in your `mods` folder.
 3. Start the game. The settings screen is in *Mods > Limn > Config*.
 
@@ -41,11 +43,12 @@ Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings scr
 | Setting | Range | Default | What it does |
 |---|---|---|---|
 | Enabled | on / off | on | Whether the custom outline replaces vanilla's |
-| Outline Style | Solid Color / Rainbow | Solid Color | Which look is drawn |
-| Opacity, Red, Green, Blue | 0 - 255 | teal, fully opaque | The Solid Color outline color. Rainbow keeps the opacity but ignores the RGB sliders |
-| Line Width | 0.5x - 4x | 1x | Thickness compared with vanilla |
-| Rainbow Speed | 0.1 - 5 | 1 | How fast the rainbow cycles |
-| Rainbow Spread | 0 - 3 | 1 | How much the color changes across one block |
+| Outline Style | Solid Color / Rainbow / Chase / Mining Progress | Solid Color | Which look is drawn |
+| Opacity | 1 - 255 | 255 | How opaque the outline is, in every style |
+| Red, Green, Blue | 0 - 255 | teal | The outline color. Rainbow ignores it |
+| Line Width | 0.5x - 4x | 1x | Thickness compared with vanilla (Minecraft 1.21.11 and newer) |
+| Animation Speed | 0.1 - 5 | 1 | How fast Rainbow and Chase move |
+| Animation Spread | 0 - 3 | 1 | How much Rainbow and Chase change across one block |
 
 With the settings screen (Mod Menu on Fabric, the Mods list on NeoForge and Forge), changes apply straight away and are saved when you close the screen. The screen also has a *Reset to Defaults* button.
 
@@ -55,12 +58,14 @@ Without Mod Menu you can edit `config/limn.json` in your game folder and restart
 {
   "enabled": true,
   "mode": "Solid Color",
-  "color": -13108528,
+  "color": -13377328,
   "width": 1.0,
   "rainbowSpeed": 1.0,
   "rainbowSpread": 1.0
 }
 ```
+
+`mode` is one of `Solid Color`, `Rainbow`, `Chase` or `Mining Progress`. `rainbowSpeed` and `rainbowSpread` are the Animation Speed and Animation Spread settings.
 
 Values that are out of range are corrected automatically. If the file is broken, the game still starts with the defaults and your old file is kept as `limn.json.broken`.
 
