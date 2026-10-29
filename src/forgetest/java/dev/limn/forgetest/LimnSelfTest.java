@@ -36,7 +36,6 @@ public final class LimnSelfTest {
         }
         ticks++;
         Minecraft client = Minecraft.getInstance();
-        // The enabled toggle is the first widget: left column, first row.
         double buttonX = client.getWindow().getGuiScaledWidth() / 2.0 - 80;
         double buttonY = client.getWindow().getGuiScaledHeight() / 6 - 2;
         if (ticks == 120) {
@@ -105,7 +104,6 @@ public final class LimnSelfTest {
         client.stop();
     }
 
-    // Real cursor moves don't reach an unfocused window, so feed the mouse handler directly.
     private static void hover(Minecraft client, double x, double y) {
         try {
             Method onMove = MouseHandler.class.getDeclaredMethod("onMove", long.class, double.class, double.class);

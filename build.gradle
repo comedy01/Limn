@@ -130,7 +130,6 @@ if (forge) {
 
 	legacyForge {
 		if (versionProps.getProperty("neoforge_version") != null) {
-			// NeoForge 1.20.1 is a Forge fork; only used to launch-check the Forge 1.20.1 code there
 			enable { neoForgeVersion = versionProps.getProperty("neoforge_version") }
 		} else {
 			version = versionProps.getProperty("forge_version")
@@ -202,7 +201,6 @@ jar {
 	}
 }
 
-// Launch check for versions without the client gametest API: ./gradlew runClient -Pminecraft_version=1.19.2 -Pselftest
 if (fabric && !gametest && project.hasProperty("selftest")) {
 	sourceSets {
 		fabrictest

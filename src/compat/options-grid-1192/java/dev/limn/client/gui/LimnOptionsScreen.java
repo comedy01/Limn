@@ -41,7 +41,6 @@ public abstract class LimnOptionsScreen extends OptionsSubScreen {
         rows++;
     }
 
-    // Widgets have no tooltip of their own before 1.19.3, so the screen draws them.
     protected <T extends AbstractWidget> T tooltip(T widget, Component tooltip) {
         tooltips.put(widget, tooltip);
         return widget;
